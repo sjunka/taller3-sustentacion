@@ -82,6 +82,7 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
   const color = colorDe(paso, i)
   const mapa = useMemo(() => Object.fromEntries(nodos.map((n) => [n.id, n])), [nodos])
   const lista = useRef<HTMLOListElement>(null)
+  const raiz = useRef<HTMLDivElement>(null)
   const primera = useRef(true)
 
   // Atajos de teclado: flechas y barra espaciadora.
@@ -101,6 +102,9 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
     const ol = lista.current
     const li = ol?.children[i] as HTMLElement | undefined
     if (ol && li) ol.scrollTo({ top: li.offsetTop - ol.clientHeight / 2 + li.clientHeight / 2, behavior: 'smooth' })
+    // Regla: el diagrama y la explicación del paso deben quedar completos en pantalla.
+    const r = raiz.current?.getBoundingClientRect()
+    if (r && (r.top < 0 || r.bottom > window.innerHeight)) raiz.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     if (primera.current) { primera.current = false; return }
     if (sonido && (paso.estado === 'fail' || paso.estado === 'ok')) pitido(paso.estado)
   }, [i]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -110,7 +114,7 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
   const tonoAviso = paso.estado === 'fail' ? '#b93838' : paso.estado === 'ok' ? '#2f7d46' : '#8a6508'
 
   return (
-    <div>
+    <div ref={raiz} className="scroll-mt-2">
       <div className="sticky top-0 z-20 -mx-1 mb-md flex flex-wrap items-center gap-xs bg-canvas/95 px-1 py-sm backdrop-blur">
         <Boton onClick={toggle} primario>{playing ? 'Pausa' : i >= pasos.length - 1 ? 'Repetir' : 'Reproducir'}</Boton>
         <Boton onClick={ant} desactivado={i === 0}>Anterior</Boton>
@@ -120,7 +124,8 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
         <span className="ml-auto text-[15px] font-medium text-ink">Paso {i + 1} de {pasos.length}</span>
       </div>
 
-      <svg viewBox={`0 0 ${ancho} ${alto}`} className="mx-auto block w-full rounded-xl border border-hairline bg-soft" role="img" aria-label="Diagrama">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-md">
+      <svg style={{ maxHeight: 'calc(100vh - 90px)' }} viewBox={`0 0 ${ancho} ${alto}`} className="mx-auto block w-full rounded-xl border border-hairline bg-soft" role="img" aria-label="Diagrama">
         {nodos.filter((n) => n.tipo === 'grupo').map((n) => (
           <g key={n.id}>
             <rect x={n.x} y={n.y} width={n.w} height={n.h} rx={14} fill="var(--canvas)" fillOpacity={0.5} stroke={paso.nodos.includes(n.id) ? color : 'var(--muted)'} strokeWidth={paso.nodos.includes(n.id) ? 3 : 1.5} strokeDasharray="8 6" />
@@ -211,7 +216,8 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
         })}
       </svg>
 
-      <div className="sticky bottom-0 z-20 mt-md overflow-hidden rounded-xl border border-hairline bg-card shadow-[0_-6px_20px_rgba(0,0,0,0.12)]" style={{ borderLeft: `8px solid ${color}` }}>
+      <div className="flex flex-col">
+      <div className="mt-md overflow-hidden lg:mt-0 rounded-xl border border-hairline bg-card shadow-[0_-6px_20px_rgba(0,0,0,0.12)]" style={{ borderLeft: `8px solid ${color}` }}>
         {aviso && (
           <div role="alert" className="px-lg py-sm text-[20px] font-semibold text-white" style={{ background: tonoAviso }}>
             {paso.estado === 'fail' ? 'Falla: ' : paso.estado === 'ok' ? 'Listo: ' : 'En pausa: '}
@@ -220,12 +226,12 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
         )}
         <div className="p-lg">
           <div className="text-[14px] font-medium uppercase tracking-[1.5px] text-muted">Paso {i + 1} de {pasos.length}</div>
-          <h3 className="mt-xxs text-[28px] leading-tight">{paso.titulo}</h3>
-          <p className="mt-sm text-[18px] leading-relaxed text-body">{paso.texto}</p>
+          <h3 className="mt-xxs text-[24px] leading-tight">{paso.titulo}</h3>
+          <p className="mt-sm text-[17px] leading-relaxed text-body">{paso.texto}</p>
         </div>
       </div>
 
-      <ol ref={lista} className="relative mt-md max-h-[260px] overflow-y-auto rounded-xl border border-hairline bg-card p-xs">
+      <ol ref={lista} className="relative mt-md max-h-[260px] lg:max-h-[calc(100vh-420px)] min-h-[120px] overflow-y-auto rounded-xl border border-hairline bg-card p-xs">
         {pasos.map((p, k) => (
           <li key={k}>
             <button onClick={() => ir(k)} className={`flex w-full items-start gap-sm rounded-md px-sm py-xs text-left text-[16px] ${k === i ? 'bg-canvas font-semibold text-ink' : 'text-body hover:bg-canvas'}`}>
@@ -235,6 +241,8 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
           </li>
         ))}
       </ol>
+      </div>
+      </div>
     </div>
   )
 }
