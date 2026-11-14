@@ -103,9 +103,9 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
     const li = ol?.children[i] as HTMLElement | undefined
     if (ol && li) ol.scrollTo({ top: li.offsetTop - ol.clientHeight / 2 + li.clientHeight / 2, behavior: 'smooth' })
     // Regla: el diagrama y la explicación del paso deben quedar completos en pantalla.
+    if (primera.current) { primera.current = false; return }
     const r = raiz.current?.getBoundingClientRect()
     if (r && (r.top < 0 || r.bottom > window.innerHeight)) raiz.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    if (primera.current) { primera.current = false; return }
     if (sonido && (paso.estado === 'fail' || paso.estado === 'ok')) pitido(paso.estado)
   }, [i]) // eslint-disable-line react-hooks/exhaustive-deps
 

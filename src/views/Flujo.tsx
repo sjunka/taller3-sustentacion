@@ -25,7 +25,7 @@ export default function Flujo() {
       </p>
       <h2 className="mb-md text-[28px]">Flujo del equipo</h2>
       <Diagrama ancho={ANCHO} alto={ALTO} nodos={nodos} aristas={aristas} pasos={pasos} />
-      <GuionVista vistas={['flujo', 'cierre']} />
+      <GuionVista vistas={['flujo']} />
     </section>
   )
 }

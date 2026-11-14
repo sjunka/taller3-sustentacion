@@ -40,7 +40,7 @@ export default function Pipeline() {
           </tbody>
         </table>
       </details>
-      <GuionVista vistas={['pipeline']} />
+      <GuionVista vistas={['pipeline', 'fallos']} />
     </section>
   )
 }

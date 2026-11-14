@@ -7,7 +7,7 @@ export default function Arquitectura() {
     <section>
       <h1 className="mb-md text-[36px] leading-tight">Arquitectura en AWS</h1>
       <Diagrama ancho={ANCHO} alto={ALTO} nodos={nodos} aristas={aristas} pasos={pasos} />
-      <GuionVista vistas={['arquitectura']} />
+      <GuionVista vistas={['arquitectura', 'cierre']} />
     </section>
   )
 }
