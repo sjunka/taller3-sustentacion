@@ -84,6 +84,11 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
   const lista = useRef<HTMLOListElement>(null)
   const raiz = useRef<HTMLDivElement>(null)
   const primera = useRef(true)
+  // Regla: diagrama + explicación completos en pantalla. Cualquier control lleva el escenario a la vista.
+  const verEscenario = () => {
+    const r = raiz.current?.getBoundingClientRect()
+    if (r && (r.top < 0 || r.top > 8 || r.bottom > window.innerHeight)) raiz.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   // Atajos de teclado: flechas y barra espaciadora.
   useEffect(() => {
@@ -91,7 +96,7 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
       if (e.target instanceof HTMLElement && /INPUT|TEXTAREA|BUTTON|SUMMARY/.test(e.target.tagName)) return
       if (e.key === 'ArrowRight') sig()
       else if (e.key === 'ArrowLeft') ant()
-      else if (e.key === ' ') { e.preventDefault(); toggle() }
+      else if (e.key === ' ') { e.preventDefault(); verEscenario(); toggle() }
     }
     window.addEventListener('keydown', f)
     return () => window.removeEventListener('keydown', f)
@@ -104,8 +109,7 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
     if (ol && li) ol.scrollTo({ top: li.offsetTop - ol.clientHeight / 2 + li.clientHeight / 2, behavior: 'smooth' })
     // Regla: el diagrama y la explicación del paso deben quedar completos en pantalla.
     if (primera.current) { primera.current = false; return }
-    const r = raiz.current?.getBoundingClientRect()
-    if (r && (r.top < 0 || r.bottom > window.innerHeight)) raiz.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    verEscenario()
     if (sonido && (paso.estado === 'fail' || paso.estado === 'ok')) pitido(paso.estado)
   }, [i]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -115,8 +119,8 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
 
   return (
     <div ref={raiz} className="scroll-mt-2">
-      <div className="sticky top-0 z-20 -mx-1 mb-md flex flex-wrap items-center gap-xs bg-canvas/95 px-1 py-sm backdrop-blur">
-        <Boton onClick={toggle} primario>{playing ? 'Pausa' : i >= pasos.length - 1 ? 'Repetir' : 'Reproducir'}</Boton>
+      <div className="-mx-1 mb-sm flex flex-wrap items-center gap-xs bg-canvas/95 px-1 py-sm backdrop-blur">
+        <Boton onClick={() => { verEscenario(); toggle() }} primario>{playing ? 'Pausa' : i >= pasos.length - 1 ? 'Repetir' : 'Reproducir'}</Boton>
         <Boton onClick={ant} desactivado={i === 0}>Anterior</Boton>
         <Boton onClick={sig} desactivado={i >= pasos.length - 1}>Siguiente</Boton>
         <Boton onClick={reiniciar}>Reiniciar</Boton>
@@ -124,8 +128,8 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
         <span className="ml-auto text-[15px] font-medium text-ink">Paso {i + 1} de {pasos.length}</span>
       </div>
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-md">
-      <svg style={{ maxHeight: 'calc(100vh - 90px)' }} viewBox={`0 0 ${ancho} ${alto}`} className="mx-auto block w-full rounded-xl border border-hairline bg-soft" role="img" aria-label="Diagrama">
+      <div className="grid gap-md md:grid-cols-[minmax(0,1fr)_320px] md:items-start xl:grid-cols-[minmax(0,1fr)_380px]">
+      <svg style={{ maxHeight: 'calc(100vh - 84px)' }} viewBox={`0 0 ${ancho} ${alto}`} className="mx-auto block w-full rounded-xl border border-hairline bg-soft" role="img" aria-label="Diagrama">
         {nodos.filter((n) => n.tipo === 'grupo').map((n) => (
           <g key={n.id}>
             <rect x={n.x} y={n.y} width={n.w} height={n.h} rx={14} fill="var(--canvas)" fillOpacity={0.5} stroke={paso.nodos.includes(n.id) ? color : 'var(--muted)'} strokeWidth={paso.nodos.includes(n.id) ? 3 : 1.5} strokeDasharray="8 6" />
@@ -216,22 +220,22 @@ export default function Diagrama({ ancho, alto, nodos, aristas, pasos, ms }: Pro
         })}
       </svg>
 
-      <div className="flex flex-col">
-      <div className="mt-md overflow-hidden lg:mt-0 rounded-xl border border-hairline bg-card shadow-[0_-6px_20px_rgba(0,0,0,0.12)]" style={{ borderLeft: `8px solid ${color}` }}>
+      <div className="flex flex-col gap-sm md:max-h-[calc(100vh-84px)]">
+      <div className="shrink-0 overflow-hidden rounded-xl border border-hairline bg-card" style={{ borderLeft: `8px solid ${color}` }}>
         {aviso && (
-          <div role="alert" className="px-lg py-sm text-[20px] font-semibold text-white" style={{ background: tonoAviso }}>
+          <div role="alert" className="px-md py-xs text-[17px] font-semibold text-white" style={{ background: tonoAviso }}>
             {paso.estado === 'fail' ? 'Falla: ' : paso.estado === 'ok' ? 'Listo: ' : 'En pausa: '}
             {aviso}
           </div>
         )}
-        <div className="p-lg">
+        <div className="p-md">
           <div className="text-[14px] font-medium uppercase tracking-[1.5px] text-muted">Paso {i + 1} de {pasos.length}</div>
-          <h3 className="mt-xxs text-[24px] leading-tight">{paso.titulo}</h3>
-          <p className="mt-sm text-[17px] leading-relaxed text-body">{paso.texto}</p>
+          <h3 className="mt-xxs text-[21px] leading-tight">{paso.titulo}</h3>
+          <p className="mt-xs text-[16px] leading-relaxed text-body">{paso.texto}</p>
         </div>
       </div>
 
-      <ol ref={lista} className="relative mt-md max-h-[260px] lg:max-h-[calc(100vh-420px)] min-h-[120px] overflow-y-auto rounded-xl border border-hairline bg-card p-xs">
+      <ol ref={lista} className="relative max-h-[220px] md:max-h-none md:min-h-0 md:flex-1 overflow-y-auto rounded-xl border border-hairline bg-card p-xs">
         {pasos.map((p, k) => (
           <li key={k}>
             <button onClick={() => ir(k)} className={`flex w-full items-start gap-sm rounded-md px-sm py-xs text-left text-[16px] ${k === i ? 'bg-canvas font-semibold text-ink' : 'text-body hover:bg-canvas'}`}>
