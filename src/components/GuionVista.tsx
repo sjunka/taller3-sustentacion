@@ -13,14 +13,15 @@ export function Chip({ quien }: { quien: Quien }) {
 export function SeccionGuion({ s, n }: { s: Seccion; n: number }) {
   const min = `${Math.floor(s.tiempoSeg / 60)}:${String(s.tiempoSeg % 60).padStart(2, '0')}`
   return (
-    <section className="grid gap-md rounded-xl border border-hairline bg-card p-md break-inside-avoid lg:grid-cols-[1fr_1.15fr]">
+    <section className="grid gap-md rounded-xl border p-md break-inside-avoid lg:grid-cols-[1fr_1.15fr]" style={{ background: `${colorQuien[s.quien]}14`, borderColor: colorQuien[s.quien], borderLeftWidth: 10 }}>
       <a href={s.ruta} className="self-start">
         <img src={base + s.captura} alt={`Pantalla ${n}: ${s.titulo}`} className="w-full rounded-lg border border-hairline" />
         <span className="mt-xxs block text-[14px] text-muted">Abrir: {s.ruta}</span>
       </a>
       <div>
-        <div className="font-mono text-[14px] font-semibold" style={{ color: colorQuien[s.quien] }}>
-          PANTALLA {n} · ~{min} min · {s.quien}
+        <div className="flex flex-wrap items-center gap-sm">
+          <span className="rounded-md px-sm py-xxs text-[20px] font-bold text-white" style={{ background: colorQuien[s.quien] }}>{s.quien}</span>
+          <span className="font-mono text-[14px] font-semibold" style={{ color: colorQuien[s.quien] }}>PANTALLA {n} · ~{min} min</span>
         </div>
         <h2 className="mt-xxs text-[24px] leading-tight">{s.titulo}</h2>
         {s.lineas.map((l, i) =>
